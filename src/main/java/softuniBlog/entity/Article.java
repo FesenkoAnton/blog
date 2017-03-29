@@ -2,6 +2,7 @@ package softuniBlog.entity;
 
 import javax.persistence.*;
 
+
 /**
  * Created by antfesenko on 28.03.2017.
  */
@@ -54,4 +55,9 @@ public class Article {
     public void setAuthor(User author) {
         this.author = author;
     }
+    @Transient
+    public String getSummary(){
+        return this.getContent().substring(0,this.getContent().length()/2)+"...";
+    }
+
 }
