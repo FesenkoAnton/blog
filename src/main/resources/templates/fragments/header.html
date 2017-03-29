@@ -23,11 +23,6 @@
                         </a>
                     </li>
                     <li sec:authorize="isAuthenticated()">
-                        <a th:href="@{/profile}">
-                            My Profile
-                        </a>
-                    </li>
-                    <li sec:authorize="isAuthenticated()">
                         <a th:href="@{/logout}">
                             Logout
                         </a>
