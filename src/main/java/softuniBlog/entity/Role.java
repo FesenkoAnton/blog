@@ -49,7 +49,7 @@ public class Role {
     }
 
     @Transient
-    public String getSimlpleName(){
+    public String getSimpleName(){
         return StringUtils.capitalize(this.getName().substring(5).toLowerCase());
     }
 }
