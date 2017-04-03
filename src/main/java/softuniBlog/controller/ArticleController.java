@@ -12,9 +12,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import softuniBlog.bindingModel.ArticleBindingModel;
 import softuniBlog.entity.Article;
+import softuniBlog.entity.Category;
 import softuniBlog.entity.User;
 import softuniBlog.repository.ArticleRepository;
+import softuniBlog.repository.CategoryRepository;
 import softuniBlog.repository.UserRepository;
+
+import java.util.List;
 
 /**
  * Created by antfesenko on 28.03.2017.
@@ -25,9 +29,15 @@ public class ArticleController {
     private ArticleRepository articleRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+
     @GetMapping("/article/create")
     @PreAuthorize("isAuthenticated()")
     public String create(Model model){
+        List<Category>categories=this.categoryRepository.findAll();
+        model.addAttribute("categories", categories);
         model.addAttribute("view","article/create");
         return "base-layout";
     }
@@ -36,7 +46,10 @@ public class ArticleController {
     public String createProcess(ArticleBindingModel articleBindingModel){
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User userEntity = this.userRepository.findByEmail(user.getUsername());
-        Article articleEntity = new Article(articleBindingModel.getTitle(),articleBindingModel.getContent(),userEntity);
+        Category category=this.categoryRepository.findOne(articleBindingModel.getCategoryId());
+
+        Article articleEntity = new Article(articleBindingModel.getTitle(),
+                articleBindingModel.getContent(),userEntity,category);
         this.articleRepository.saveAndFlush(articleEntity);
         return "redirect:/";
     }
@@ -55,18 +68,22 @@ public class ArticleController {
         model.addAttribute("view","article/details");
         return "base-layout";
     }
+
+
     @GetMapping("/article/edit/{id}")
     @PreAuthorize("isAuthenticated()")
     public String edit(@PathVariable Integer id, Model model){
-        if(!this.articleRepository.exists(id))
-        {return "redirect:/";}
+        if(!this.articleRepository.exists(id)){return "redirect:/";}
         Article article = this.articleRepository.findOne(id);
-        if(!isUserAuthorOrAdmin(article))
-        {return "redirect:/article/" + id;}
+        if(!isUserAuthorOrAdmin(article)){return "redirect:/article/" + id;}
+        List<Category>categories=this.categoryRepository.findAll();
         model.addAttribute("view","article/edit");
         model.addAttribute("article", article);
+        model.addAttribute("categories",categories);
         return "base-layout";
     }
+
+
     @PostMapping("/article/edit/{id}")
     @PreAuthorize("isAuthenticated()")
     public String editProcess(@PathVariable Integer id, ArticleBindingModel articleBindingModel){
@@ -77,6 +94,8 @@ public class ArticleController {
         if(!isUserAuthorOrAdmin(article)){
             return "redirect:/article/" + id;
         }
+        Category category=this.categoryRepository.findOne(articleBindingModel.getCategoryId());
+        article.setCategory(category);
         article.setContent(articleBindingModel.getContent());
         article.setTitle(articleBindingModel.getTitle());
         this.articleRepository.saveAndFlush(article);
@@ -115,4 +134,5 @@ public class ArticleController {
         User userEntity = this.userRepository.findByEmail(user.getUsername());
         return userEntity.isAdmin() || userEntity.isAuthor(article);
     }
+
 }

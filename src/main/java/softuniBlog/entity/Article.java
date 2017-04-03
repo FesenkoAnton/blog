@@ -13,12 +13,17 @@ public class Article {
     private String title;
     private String content;
     private User author;
+    private Category category;
 
-    public Article(String title, String content, User author){
+
+
+    public Article(String title, String content, User author, Category category){
         this.title = title;
         this.content = content;
         this.author = author;
+        this.category=category;
     }
+
     public Article(){}
 
     @Id
@@ -58,6 +63,16 @@ public class Article {
     @Transient
     public String getSummary(){
         return this.getContent().substring(0,this.getContent().length()/2)+"...";
+    }
+
+    @ManyToOne()
+    @JoinColumn(nullable = false,name = "categoryId")
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
 }
